@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { firestore } from "@/firebase";
-import { Box, Modal, Typography, Stack, TextField } from "@mui/material";
+import { Box, Modal, Typography, Stack, TextField, Button } from "@mui/material";
 import { collection, query, getDocs, getDoc } from "firebase/firestore";
 
 export default function Home() {
@@ -58,7 +58,6 @@ export default function Home() {
 
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
-
   return (
     <Box 
       width="100vw" 
@@ -86,28 +85,47 @@ export default function Home() {
           }}
         >
           <Typography variant="h6">Add item</Typography>
-          <Stack width="100%" direction="row" spacing={2}>
+          <Stack width="100%" direction="column" spacing={2}>
             <TextField
-              variant = "outlined"
-              fullwidth
+              variant="outlined"
+              fullWidth
               value={itemName}
-              onChange={(e) => {
-                setItemName(e.target.value)
-              }}
+              onChange={(e) => setItemName(e.target.value)}
             />
             <Button 
-              variant ="outlined" 
-              onClick={() =>{
-                addItem(itemName)
-                setItemName('')
-                handleClose()
-            }}>
+              variant="outlined" 
+              onClick={() => {
+                addItem(itemName);
+                setItemName('');
+                handleClose();
+              }}
+            >
               Add
             </Button>
           </Stack>
         </Box>
       </Modal>
-      <Typography variant="h1">Inventory Management</Typography>
+      <Button 
+        variant="contained" 
+        onClick={handleOpen}
+      >
+        Add New Item
+      </Button>
+      <Box border="1px solid #333">
+        <Box 
+        width= "800px"
+        height= "100px"
+        bgcolor="#ADD8E6" 
+        display= "flex"
+        alignItems="center"  
+        justifyContent="center"
+        >
+            <Typography variant="h2" colour = "#333">
+              Inventory Items
+            </Typography>
+        </Box>
+      </Box>
     </Box>
   )
+
 }
