@@ -10,6 +10,7 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
+  const [quantity, setQuantity] = useState(1);  // State for quantity
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,16 +37,16 @@ export default function Home() {
     }
   };
 
-  const addItem = async (item) => {
+  const addItem = async (item, quantity) => {  // Updated function signature
     try {
       const docRef = doc(collection(firestore, 'inventory'), item);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const { quantity } = docSnap.data();
-        await setDoc(docRef, { quantity: quantity + 1 });
+        const { quantity: existingQuantity } = docSnap.data();
+        await setDoc(docRef, { quantity: existingQuantity + quantity });
       } else {
-        await setDoc(docRef, { quantity: 1 });
+        await setDoc(docRef, { quantity });
       }
 
       await updateInventory();
@@ -100,7 +101,7 @@ export default function Home() {
       gap={2}
     >
       <Typography variant="h3" color="#333" sx={{ mb: 2 }}>
-        Pantry Managment
+        Pantry System
       </Typography>
       {loading && <CircularProgress />}
       {error && <Snackbar open autoHideDuration={6000} onClose={() => setError(null)}>
@@ -110,7 +111,7 @@ export default function Home() {
       </Snackbar>}
       <TextField
         variant="outlined"
-        placeholder="Search..."
+        placeholder="Search Pantry..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         sx={{ mb: 2 }}
@@ -139,12 +140,23 @@ export default function Home() {
               fullWidth
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
+              label="Item Name"
+            />
+            <TextField
+              variant="outlined"
+              fullWidth
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value))}
+              label="Quantity"
+              type="number"
+              inputProps={{ min: 1 }}
             />
             <Button 
               variant="outlined" 
               onClick={() => {
-                addItem(itemName);
+                addItem(itemName, quantity);
                 setItemName('');
+                setQuantity(1);
                 handleClose();
               }}
             >
@@ -160,66 +172,66 @@ export default function Home() {
         Add New Item
       </Button>
       <Box border="1px solid #333" width="800px">
-      <Box 
-        height="100px"
-        bgcolor="#ADD8E6"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Typography variant="h2" color="#333">
-          Inventory Items
-        </Typography>
-      </Box>
-      <Stack width="100%" spacing={2} overflow="auto">
-        <Box
-          width="100%"
+        <Box 
+          height="100px"
+          bgcolor="#ADD8E6"
           display="flex"
           alignItems="center"
-          justifyContent="space-between"
-          padding={2}
-          bgcolor="#d0d0d0"
+          justifyContent="center"
         >
-          <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
-            Item Name
-          </Typography>
-          <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
-            Quantity
-          </Typography>
-          <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
-            Actions
+          <Typography variant="h2" color="#333">
+            Inventory Items
           </Typography>
         </Box>
-        {inventory
-          .filter(({ name }) => name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .map(({ name, quantity }) => (
-            <Box
-              key={name}
-              width="100%"
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              bgcolor="#0000"
-              padding={2}
-            >
-              <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
-                {name.charAt(0).toUpperCase() + name.slice(1)}
-              </Typography>
-              <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
-                {quantity}
-              </Typography>
-              <Stack direction="row" spacing={2} sx={{ flex: 1, justifyContent: 'center' }}>
-                <Button variant="contained" onClick={() => addItem(name)}>
-                  Add
-                </Button>
-                <Button variant="contained" onClick={() => handleConfirmationOpen(name)}>
-                  Remove
-                </Button>
-              </Stack>
-            </Box>
-        ))}
-      </Stack>
-    </Box>
+        <Stack width="100%" spacing={2} overflow="auto">
+          <Box
+            width="100%"
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            padding={2}
+            bgcolor="#d0d0d0"
+          >
+            <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+              Item Name
+            </Typography>
+            <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+              Quantity
+            </Typography>
+            <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+              Actions
+            </Typography>
+          </Box>
+          {inventory
+            .filter(({ name }) => name.toLowerCase().includes(searchTerm.toLowerCase()))
+            .map(({ name, quantity }) => (
+              <Box
+                key={name}
+                width="100%"
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                bgcolor="#0000"
+                padding={2}
+              >
+                <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+                  {name.charAt(0).toUpperCase() + name.slice(1)}
+                </Typography>
+                <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+                  {quantity}
+                </Typography>
+                <Stack direction="row" spacing={2} sx={{ flex: 1, justifyContent: 'center' }}>
+                  <Button variant="contained" onClick={() => addItem(name, 1)}>
+                    Add
+                  </Button>
+                  <Button variant="contained" onClick={() => handleConfirmationOpen(name)}>
+                    Remove
+                  </Button>
+                </Stack>
+              </Box>
+          ))}
+        </Stack>
+      </Box>
       <Dialog
         open={confirmationOpen}
         onClose={handleConfirmationClose}
