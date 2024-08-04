@@ -99,6 +99,9 @@ export default function Home() {
       alignItems="center" 
       gap={2}
     >
+      <Typography variant="h3" color="#333" sx={{ mb: 2 }}>
+        Pantry Managment
+      </Typography>
       {loading && <CircularProgress />}
       {error && <Snackbar open autoHideDuration={6000} onClose={() => setError(null)}>
         <Alert onClose={() => setError(null)} severity="error">
@@ -157,60 +160,66 @@ export default function Home() {
         Add New Item
       </Button>
       <Box border="1px solid #333" width="800px">
-        <Box 
-          height="100px"
-          bgcolor="#ADD8E6"
+      <Box 
+        height="100px"
+        bgcolor="#ADD8E6"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Typography variant="h2" color="#333">
+          Inventory Items
+        </Typography>
+      </Box>
+      <Stack width="100%" spacing={2} overflow="auto">
+        <Box
+          width="100%"
           display="flex"
           alignItems="center"
-          justifyContent="center"
+          justifyContent="space-between"
+          padding={2}
+          bgcolor="#d0d0d0"
         >
-          <Typography variant="h2" color="#333">
-            Inventory Items
+          <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+            Item Name
+          </Typography>
+          <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+            Quantity
+          </Typography>
+          <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+            Actions
           </Typography>
         </Box>
-        <Stack width="100%" height="300px" spacing={2} overflow="auto">
-          {inventory
-            .filter(({ name }) => name.toLowerCase().includes(searchTerm.toLowerCase()))
-            .map(({ name, quantity }) => (
-              <Box
-                key={name}
-                width="100%"
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                bgcolor="#f0f0f0"
-                padding={2}
-              >
-                <Typography 
-                  variant="h6"
-                  color="#333"
-                >
-                  {name.charAt(0).toUpperCase() + name.slice(1)}
-                </Typography>
-                <Typography 
-                  variant="h6"
-                  color="#333"
-                >
-                  {quantity}
-                </Typography>
-                <Stack direction="row" spacing={2}>
-                  <Button 
-                    variant="contained" 
-                    onClick={() => addItem(name)}
-                  >
-                    Add
-                  </Button>
-                  <Button 
-                    variant="contained" 
-                    onClick={() => handleConfirmationOpen(name)}
-                  >
-                    Remove
-                  </Button>
-                </Stack>
-              </Box>
-          ))}
-        </Stack>
-      </Box>
+        {inventory
+          .filter(({ name }) => name.toLowerCase().includes(searchTerm.toLowerCase()))
+          .map(({ name, quantity }) => (
+            <Box
+              key={name}
+              width="100%"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              bgcolor="#0000"
+              padding={2}
+            >
+              <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+                {name.charAt(0).toUpperCase() + name.slice(1)}
+              </Typography>
+              <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+                {quantity}
+              </Typography>
+              <Stack direction="row" spacing={2} sx={{ flex: 1, justifyContent: 'center' }}>
+                <Button variant="contained" onClick={() => addItem(name)}>
+                  Add
+                </Button>
+                <Button variant="contained" onClick={() => handleConfirmationOpen(name)}>
+                  Remove
+                </Button>
+              </Stack>
+            </Box>
+        ))}
+      </Stack>
+    </Box>
       <Dialog
         open={confirmationOpen}
         onClose={handleConfirmationClose}
