@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { firestore } from "@/firebase";
 import { Box, Modal, Typography, Stack, TextField, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Alert } from "@mui/material";
 import { collection, query, getDocs, getDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
@@ -10,13 +10,16 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
-  const [quantity, setQuantity] = useState(1); 
-  const [expiryDate, setExpiryDate] = useState(''); // State for expiry date
+  const [quantity, setQuantity] = useState(1);
+  const [expiryDate, setExpiryDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [processing, setProcessing] = useState(false);
 
   const updateInventory = async () => {
     try {
@@ -38,7 +41,7 @@ export default function Home() {
     }
   };
 
-  const addItem = async (item, quantity, expiryDate) => { 
+  const addItem = async (item, quantity, expiryDate) => {
     try {
       const docRef = doc(collection(firestore, 'inventory'), item);
       const docSnap = await getDoc(docRef);
@@ -91,6 +94,49 @@ export default function Home() {
   };
   const handleConfirmationClose = () => setConfirmationOpen(false);
 
+  // Function to handle image file change
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  // Function to analyze image using a separate image recognition API
+  const analyzeImage = async (file) => {
+    setProcessing(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Use an image recognition API to get a description
+      const imageResponse = await axios.post('YOUR_IMAGE_RECOGNITION_API_URL', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const imageDescription = imageResponse.data.description || 'Unknown Item';
+
+      // Use LLaMA to process the image description
+      const llamaResponse = await axios.post('YOUR_LLAMA_API_URL', { text: imageDescription });
+      const item = llamaResponse.data.processedText || imageDescription;
+
+      await addItem(item, 1, ''); // Add item to inventory with default values
+    } catch (error) {
+      setError('Failed to analyze image');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleAddWithCamera = () => {
+    if (imageFile) {
+      analyzeImage(imageFile);
+    } else {
+      setError('No image selected');
+    }
+  };
+
   return (
     <Box 
       width="100vw" 
@@ -113,6 +159,7 @@ export default function Home() {
         Keep track of your pantry items, their quantities, and expiration dates effortlessly.
       </Typography>
       {loading && <CircularProgress />}
+      {processing && <CircularProgress />}
       {error && <Snackbar open autoHideDuration={6000} onClose={() => setError(null)}>
         <Alert onClose={() => setError(null)} severity="error">
           {error}
@@ -180,6 +227,32 @@ export default function Home() {
               }}
             >
               Add
+            </Button>
+            {/* Add with Camera Button */}
+            <Button 
+              variant="contained" 
+              component="label"
+            >
+              Add with Camera
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleFileChange}
+              />
+            </Button>
+            {/* Preview selected image */}
+            {imagePreview && (
+              <Box mt={2}>
+                <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }} />
+              </Box>
+            )}
+            <Button 
+              variant="contained"
+              onClick={handleAddWithCamera}
+              disabled={processing}
+            >
+              {processing ? 'Processing...' : 'Analyze Image'}
             </Button>
           </Stack>
         </Box>
