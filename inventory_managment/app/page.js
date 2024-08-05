@@ -10,7 +10,8 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
-  const [quantity, setQuantity] = useState(1);  // State for quantity
+  const [quantity, setQuantity] = useState(1); 
+  const [expiryDate, setExpiryDate] = useState(''); // State for expiry date
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,16 +38,16 @@ export default function Home() {
     }
   };
 
-  const addItem = async (item, quantity) => {  // Updated function signature
+  const addItem = async (item, quantity, expiryDate) => { 
     try {
       const docRef = doc(collection(firestore, 'inventory'), item);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const { quantity: existingQuantity } = docSnap.data();
-        await setDoc(docRef, { quantity: existingQuantity + quantity });
+        await setDoc(docRef, { quantity: existingQuantity + quantity, expiryDate });
       } else {
-        await setDoc(docRef, { quantity });
+        await setDoc(docRef, { quantity, expiryDate });
       }
 
       await updateInventory();
@@ -99,9 +100,17 @@ export default function Home() {
       justifyContent="center" 
       alignItems="center" 
       gap={2}
+      sx={{ 
+        backgroundImage: 'url(background.jpg)', // Replace with the actual path to your image
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     >
-      <Typography variant="h3" color="#333" sx={{ mb: 2 }}>
+      <Typography variant="h2" color="#333" sx={{ mb: 2, fontWeight: 'bold' }}>
         Pantry System
+      </Typography>
+      <Typography variant="h5" color="#333" sx={{ mb: 2 }}>
+        Keep track of your pantry items, their quantities, and expiration dates effortlessly.
       </Typography>
       {loading && <CircularProgress />}
       {error && <Snackbar open autoHideDuration={6000} onClose={() => setError(null)}>
@@ -151,12 +160,22 @@ export default function Home() {
               type="number"
               inputProps={{ min: 1 }}
             />
+            <TextField
+              variant="outlined"
+              fullWidth
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              label="Expiry Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+            />
             <Button 
               variant="outlined" 
               onClick={() => {
-                addItem(itemName, quantity);
+                addItem(itemName, quantity, expiryDate);
                 setItemName('');
                 setQuantity(1);
+                setExpiryDate('');
                 handleClose();
               }}
             >
@@ -179,7 +198,7 @@ export default function Home() {
           alignItems="center"
           justifyContent="center"
         >
-          <Typography variant="h2" color="#333">
+          <Typography variant="h3" color="#333" sx={{ mb: 2, fontWeight: 'bold' }}>
             Inventory Items
           </Typography>
         </Box>
@@ -199,12 +218,15 @@ export default function Home() {
               Quantity
             </Typography>
             <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+              Expiry Date
+            </Typography>
+            <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
               Actions
             </Typography>
           </Box>
           {inventory
             .filter(({ name }) => name.toLowerCase().includes(searchTerm.toLowerCase()))
-            .map(({ name, quantity }) => (
+            .map(({ name, quantity, expiryDate }) => (
               <Box
                 key={name}
                 width="100%"
@@ -220,8 +242,11 @@ export default function Home() {
                 <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
                   {quantity}
                 </Typography>
+                <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
+                  {expiryDate}
+                </Typography>
                 <Stack direction="row" spacing={2} sx={{ flex: 1, justifyContent: 'center' }}>
-                  <Button variant="contained" onClick={() => addItem(name, 1)}>
+                  <Button variant="contained" onClick={() => addItem(name, 1, expiryDate)}>
                     Add
                   </Button>
                   <Button variant="contained" onClick={() => handleConfirmationOpen(name)}>
