@@ -5,10 +5,12 @@ import axios from "axios";
 import { firestore } from "@/firebase";
 import { Box, Modal, Typography, Stack, TextField, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Alert } from "@mui/material";
 import { collection, query, getDocs, getDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
+import Footer from "@/app/Footer"; // Import the Footer component
 
 export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false); // State for camera modal
   const [itemName, setItemName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [expiryDate, setExpiryDate] = useState('');
@@ -88,6 +90,8 @@ export default function Home() {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const handleCameraOpen = () => setCameraOpen(true); // Open camera modal
+  const handleCameraClose = () => setCameraOpen(false); // Close camera modal
   const handleConfirmationOpen = (item) => {
     setItemToRemove(item);
     setConfirmationOpen(true);
@@ -129,14 +133,6 @@ export default function Home() {
     }
   };
 
-  const handleAddWithCamera = () => {
-    if (imageFile) {
-      analyzeImage(imageFile);
-    } else {
-      setError('No image selected');
-    }
-  };
-
   return (
     <Box 
       width="100vw" 
@@ -155,7 +151,7 @@ export default function Home() {
       <Typography variant="h2" color="#333" sx={{ mb: 2, fontWeight: 'bold' }}>
         Pantry System
       </Typography>
-      <Typography variant="h5" color="#333" sx={{ mb: 2 }}>
+      <Typography variant="h6" color="#333" sx={{ mb: 2 }}>
         Keep track of your pantry items, their quantities, and expiration dates effortlessly.
       </Typography>
       {loading && <CircularProgress />}
@@ -165,13 +161,31 @@ export default function Home() {
           {error}
         </Alert>
       </Snackbar>}
-      <TextField
-        variant="outlined"
-        placeholder="Search Pantry..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        sx={{ mb: 2 }}
-      />
+
+      <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
+        <TextField
+          variant="outlined"
+          placeholder="Search Pantry..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ borderRadius: '18px', flex: 1 }}
+        />
+        <Button 
+          variant="contained" 
+          onClick={handleOpen}
+          sx={{ borderRadius: '16px' }} // Rounded corners for button
+        >
+          Add New Item
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={handleCameraOpen}
+          sx={{ borderRadius: '16px' }} // Rounded corners for button
+        >
+          Add with Camera
+        </Button>
+      </Box>
+
       <Modal open={open} onClose={handleClose}>
         <Box 
           position="absolute"
@@ -187,6 +201,7 @@ export default function Home() {
           gap={3}
           sx={{
             transform: "translate(-50%, -50%)",
+            borderRadius: '16px'
           }}
         >
           <Typography variant="h6">Add item</Typography>
@@ -197,6 +212,7 @@ export default function Home() {
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               label="Item Name"
+              sx={{ borderRadius: '16px' }} // Rounded corners for text field
             />
             <TextField
               variant="outlined"
@@ -206,6 +222,7 @@ export default function Home() {
               label="Quantity"
               type="number"
               inputProps={{ min: 1 }}
+              sx={{ borderRadius: '16px' }} // Rounded corners for text field
             />
             <TextField
               variant="outlined"
@@ -215,6 +232,7 @@ export default function Home() {
               label="Expiry Date"
               type="date"
               InputLabelProps={{ shrink: true }}
+              sx={{ borderRadius: '16px' }} // Rounded corners for text field
             />
             <Button 
               variant="outlined" 
@@ -225,15 +243,40 @@ export default function Home() {
                 setExpiryDate('');
                 handleClose();
               }}
+              sx={{ borderRadius: '16px' }} // Rounded corners for button
             >
               Add
             </Button>
-            {/* Add with Camera Button */}
+          </Stack>
+        </Box>
+      </Modal>
+
+      <Modal open={cameraOpen} onClose={handleCameraClose}>
+        <Box 
+          position="absolute"
+          top="50%"
+          left="50%"
+          width={400}
+          bgcolor="white"
+          border="2px solid #0004"
+          boxShadow={24}
+          p={4}
+          display="flex"
+          flexDirection="column"
+          gap={3}
+          sx={{
+            transform: "translate(-50%, -50%)",
+            borderRadius: '16px'
+          }}
+        >
+          <Typography variant="h6">Add with Camera</Typography>
+          <Stack width="100%" direction="column" spacing={2}>
             <Button 
               variant="contained" 
               component="label"
+              sx={{ borderRadius: '16px' }} // Rounded corners for button
             >
-              Add with Camera
+              Choose Photo
               <input
                 type="file"
                 accept="image/*"
@@ -241,41 +284,37 @@ export default function Home() {
                 onChange={handleFileChange}
               />
             </Button>
-            {/* Preview selected image */}
-            {imagePreview && (
-              <Box mt={2}>
-                <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }} />
-              </Box>
-            )}
             <Button 
               variant="contained"
-              onClick={handleAddWithCamera}
-              disabled={processing}
+              onClick={() => analyzeImage(imageFile)}
+              disabled={processing || !imageFile}
+              sx={{ borderRadius: '16px' }} // Rounded corners for button
             >
               {processing ? 'Processing...' : 'Analyze Image'}
             </Button>
           </Stack>
+          {imagePreview && (
+            <Box mt={2}>
+              <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: '16px' }} /> {/* Rounded corners for image */}
+            </Box>
+          )}
         </Box>
       </Modal>
-      <Button 
-        variant="contained" 
-        onClick={handleOpen}
-      >
-        Add New Item
-      </Button>
-      <Box border="1px solid #333" width="800px">
+
+      <Box border="1px solid #333" width="800px" sx={{ borderRadius: '16px' }}> {/* Rounded corners for inventory box */}
         <Box 
           height="100px"
           bgcolor="#ADD8E6"
           display="flex"
           alignItems="center"
           justifyContent="center"
+          sx={{ borderRadius: '16px 16px 0 0' }} // Rounded corners for top part of inventory box
         >
           <Typography variant="h3" color="#333" sx={{ mb: 2, fontWeight: 'bold' }}>
             Inventory Items
           </Typography>
         </Box>
-        <Stack width="100%" spacing={2} overflow="auto">
+        <Stack width="100%" spacing={2} overflow="auto" sx={{ borderRadius: '0 0 16px 16px' }}> {/* Rounded corners for bottom part of inventory box */}
           <Box
             width="100%"
             display="flex"
@@ -308,6 +347,7 @@ export default function Home() {
                 justifyContent="space-between"
                 bgcolor="#0000"
                 padding={2}
+                sx={{ borderRadius: '16px' }} // Rounded corners for each inventory item row
               >
                 <Typography variant="h6" color="#333" sx={{ flex: 1, textAlign: 'center' }}>
                   {name.charAt(0).toUpperCase() + name.slice(1)}
@@ -319,10 +359,10 @@ export default function Home() {
                   {expiryDate}
                 </Typography>
                 <Stack direction="row" spacing={2} sx={{ flex: 1, justifyContent: 'center' }}>
-                  <Button variant="contained" onClick={() => addItem(name, 1, expiryDate)}>
+                  <Button variant="contained" onClick={() => addItem(name, 1, expiryDate)} sx={{ borderRadius: '16px' }}>
                     Add
                   </Button>
-                  <Button variant="contained" onClick={() => handleConfirmationOpen(name)}>
+                  <Button variant="contained" onClick={() => handleConfirmationOpen(name)} sx={{ borderRadius: '16px' }}>
                     Remove
                   </Button>
                 </Stack>
@@ -333,6 +373,7 @@ export default function Home() {
       <Dialog
         open={confirmationOpen}
         onClose={handleConfirmationClose}
+        sx={{ borderRadius: '16px' }} // Rounded corners for dialog
       >
         <DialogTitle>{"Confirm Item Removal"}</DialogTitle>
         <DialogContent>
@@ -341,10 +382,10 @@ export default function Home() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirmationClose} color="primary">
+          <Button onClick={handleConfirmationClose} color="primary" sx={{ borderRadius: '16px' }}>
             Cancel
           </Button>
-          <Button onClick={removeItem} color="primary" autoFocus>
+          <Button onClick={removeItem} color="primary" autoFocus sx={{ borderRadius: '16px' }}>
             Confirm
           </Button>
         </DialogActions>
