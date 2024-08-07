@@ -406,7 +406,7 @@ export default function Home() {
         <Typography variant="body2" component="span" sx={{color: "black", mr: 1 }}>
           Jad Alriyabi © 2024
         </Typography>
-        <Link href="https://github.com/Jadalriyabi" target="_blank" sx={{ color: "black", mx: 1 }}>
+        <Link href="https://github.com/Jadalriyabi/Pantry-Project" target="_blank" sx={{ color: "black", mx: 1 }}>
           <GitHub />
         </Link>
         <Link href="https://www.linkedin.com/in/jadalriyabi/" target="_blank" sx={{ color: "black", mx: 1 }}>
