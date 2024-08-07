@@ -1,11 +1,11 @@
 "use client";
 
+import { Box, Typography, Link, CircularProgress, Snackbar, Alert, TextField, Button, Modal, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
+import { GitHub, LinkedIn } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { firestore } from "@/firebase";
-import { Box, Modal, Typography, Stack, TextField, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Alert } from "@mui/material";
 import { collection, query, getDocs, getDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
-import Footer from "@/app/Footer"; // Import the Footer component
 
 export default function Home() {
   const [inventory, setInventory] = useState([]);
@@ -370,6 +370,7 @@ export default function Home() {
           ))}
         </Stack>
       </Box>
+
       <Dialog
         open={confirmationOpen}
         onClose={handleConfirmationClose}
@@ -390,6 +391,28 @@ export default function Home() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Box
+        width="100%"
+        position="fixed"
+        bottom={0}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        bgcolor="#ADD8E6"
+        py={2}
+        sx={{ color: "white" }}
+      >
+        <Typography variant="body2" component="span" sx={{color: "black", mr: 1 }}>
+          Jad Alriyabi © 2024
+        </Typography>
+        <Link href="https://github.com/Jadalriyabi" target="_blank" sx={{ color: "black", mx: 1 }}>
+          <GitHub />
+        </Link>
+        <Link href="https://www.linkedin.com/in/jadalriyabi/" target="_blank" sx={{ color: "black", mx: 1 }}>
+          <LinkedIn />
+        </Link>
+      </Box>
     </Box>
   );
 }
