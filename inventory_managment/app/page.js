@@ -149,7 +149,7 @@ export default function Home() {
       }}
     >
       <Typography variant="h2" color="#333" sx={{ mb: 2, fontWeight: 'bold' }}>
-        Pantry System
+        PantryPal
       </Typography>
       <Typography variant="h6" color="#333" sx={{ mb: 2 }}>
         Keep track of your pantry items, their quantities, and expiration dates effortlessly.
