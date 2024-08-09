@@ -46,6 +46,7 @@ export default function Home() {
   const addItem = async (item, quantity, expiryDate) => {
     try {
       const docRef = doc(collection(firestore, 'inventory'), item);
+      
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
